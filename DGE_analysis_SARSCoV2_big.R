@@ -1,0 +1,326 @@
+#Hundreds of thousands of ribo counts
+
+library(purrr)
+library(dplyr)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(stringr)
+library(Glimma)
+library(sva)
+
+setwd("D://Projects/kenezam/gene_counts/GSE158930/")
+
+df1 <- read.csv("GSE158930_ribo_mock_novirus_4h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df2 <- read.csv("GSE158930_ribo_mock_novirus_4h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df3 <- read.csv("GSE158930_ribo_mock_novirus_4h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df4 <- read.csv("GSE158930_ribo_mock_novirus_96h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df5 <- read.csv("GSE158930_ribo_mock_novirus_96h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df6 <- read.csv("GSE158930_ribo_mock_novirus_96h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df7 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_4h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df8 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_4h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df9 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_4h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df10 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_24h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df11 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_24h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df12 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_24h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df13 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_24h_4_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df14 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_48h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df15 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_48h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df16 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_48h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df17 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_48h_4_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df18 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_72h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df19 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_72h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df20 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_72h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df21 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_72h_4_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df22 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_96h_1_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df23 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_96h_2_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df24 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_96h_3_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+df25 <- read.csv("GSE158930_ribo_virus_SARS-CoV-2_96h_4_5s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+
+dfr1 <- read.csv("GSE158930_rna_mock_novirus_4h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr2 <- read.csv("GSE158930_rna_mock_novirus_4h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr3 <- read.csv("GSE158930_rna_mock_novirus_4h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr4 <- read.csv("GSE158930_rna_mock_novirus_96h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr5 <- read.csv("GSE158930_rna_mock_novirus_96h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr6 <- read.csv("GSE158930_rna_mock_novirus_96h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr7 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_4h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr8 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_4h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr9 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_4h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr10 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_24h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr11 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_24h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr12 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_24h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr13 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_24h_4_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr14 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_48h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr15 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_48h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr16 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_48h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr17 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_48h_4_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr18 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_72h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr19 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_72h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr20 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_72h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr21 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_72h_4_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr22 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_96h_1_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr23 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_96h_2_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr24 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_96h_3_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+dfr25 <- read.csv("GSE158930_rna_virus_SARS-CoV-2_96h_4_4s/ReadsPerGene.out.tab", sep="\t")[-c(1:3),1:2]
+
+cts <- purrr::reduce(
+  #list(df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, dfr1, dfr2, dfr3, dfr4, dfr5, dfr6, dfr7, dfr8, dfr9, dfr10),
+  list(df1, df2, df3, df4, df5, df6, df7, df8, df9, df10, df11, df12, df13, df14, df15, df16, df17, df18, df19, df20, df21, df22, df23, df24, df25, dfr1, dfr2, dfr3, dfr4, dfr5, dfr6, dfr7, dfr8, dfr9, dfr10, dfr11, dfr12, dfr13, dfr14, dfr15, dfr16, dfr17, dfr18, dfr19, dfr20, dfr21, dfr22, dfr23, dfr24, dfr25),
+  full_join,
+  by = "N_unmapped")
+
+#Not actual while using filterByExpr
+#cts <- cts[rowSums(dplyr::select(cts,where(is.numeric)))>0,]
+id = gsub("\\..*","",cts$N_unmapped)
+cts <- cbind(id, cts)
+
+
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+cts$id <- AnnotationDbi::mapIds(x = org.Hs.eg.db,
+                                keys = cts$id,
+                                column = "SYMBOL",
+                                keytype = "ENSEMBL",
+                                multiVals = "list")
+
+colnames(cts) <- c("GENES_SYMBOL",
+                   "ENSEMBL_ID",
+                   "ribo_mock_novirus_4h_1",
+                   "ribo_mock_novirus_4h_2",
+                   "ribo_mock_novirus_4h_3",
+                   "ribo_mock_novirus_96h_1",
+                   "ribo_mock_novirus_96h_2",
+                   "ribo_mock_novirus_96h_3",
+                   "ribo_virus_SARS-CoV-2_4h_1",
+                   "ribo_virus_SARS-CoV-2_4h_2",
+                   "ribo_virus_SARS-CoV-2_4h_3",
+                   "ribo_virus_SARS-CoV-2_24h_1",
+                   "ribo_virus_SARS-CoV-2_24h_2",
+                   "ribo_virus_SARS-CoV-2_24h_3",
+                   "ribo_virus_SARS-CoV-2_24h_4",
+                   "ribo_virus_SARS-CoV-2_48h_1",
+                   "ribo_virus_SARS-CoV-2_48h_2",
+                   "ribo_virus_SARS-CoV-2_48h_3",
+                   "ribo_virus_SARS-CoV-2_48h_4",
+                   "ribo_virus_SARS-CoV-2_72h_1",
+                   "ribo_virus_SARS-CoV-2_72h_2",
+                   "ribo_virus_SARS-CoV-2_72h_3",
+                   "ribo_virus_SARS-CoV-2_72h_4",
+                   "ribo_virus_SARS-CoV-2_96h_1",
+                   "ribo_virus_SARS-CoV-2_96h_2",
+                   "ribo_virus_SARS-CoV-2_96h_3",
+                   "ribo_virus_SARS-CoV-2_96h_4",
+                   
+                   "rna_mock_novirus_4h_1",
+                   "rna_mock_novirus_4h_2",
+                   "rna_mock_novirus_4h_3",
+                   "rna_mock_novirus_96h_1",
+                   "rna_mock_novirus_96h_2",
+                   "rna_mock_novirus_96h_3",
+                   "rna_virus_SARS-CoV-2_4h_1",
+                   "rna_virus_SARS-CoV-2_4h_2",
+                   "rna_virus_SARS-CoV-2_4h_3",
+                   "rna_virus_SARS-CoV-2_24h_1",
+                   "rna_virus_SARS-CoV-2_24h_2",
+                   "rna_virus_SARS-CoV-2_24h_3",
+                   "rna_virus_SARS-CoV-2_24h_4",
+                   "rna_virus_SARS-CoV-2_48h_1",
+                   "rna_virus_SARS-CoV-2_48h_2",
+                   "rna_virus_SARS-CoV-2_48h_3",
+                   "rna_virus_SARS-CoV-2_48h_4",
+                   "rna_virus_SARS-CoV-2_72h_1",
+                   "rna_virus_SARS-CoV-2_72h_2",
+                   "rna_virus_SARS-CoV-2_72h_3",
+                   "rna_virus_SARS-CoV-2_72h_4",
+                   "rna_virus_SARS-CoV-2_96h_1",
+                   "rna_virus_SARS-CoV-2_96h_2",
+                   "rna_virus_SARS-CoV-2_96h_3",
+                   "rna_virus_SARS-CoV-2_96h_4")
+
+cts$GENES_SYMBOL <- gsub('[c()"",]', "", cts$GENES_SYMBOL)
+
+cts_rna <- cbind(cts[,c(1:2)],dplyr::select(cts, contains("rna_")))
+cts_ribo <- cbind(cts[,c(1:2)],dplyr::select(cts, contains("ribo_")))
+
+#time <- c(rep(c(1.75, rep(c(3.5, 6.25),2)), 4))
+time <- c(rep(c(rep(4, 3), rep(96, 3), rep(4, 3), rep(24, 4), rep(48, 4), rep(72, 4), rep(96, 4)),2))
+time <- factor(time)
+#type <- c(rep('mock', 5), rep('EV71', 5), rep('mock', 5), rep('EV71', 5))
+type <- c(rep('mock', 6), rep('sarscov2', 19), rep('mock', 6), rep('sarscov2', 19))
+type <- factor(type)
+reg <- c(rep('ribo', 25), rep('rna', 25))
+reg <- factor(reg)
+rep <- c(rep(c(rep(c('1', '2', '3'), 3), rep(c('1', '2', '3', '4'), 4)),2))
+rep <- factor(rep)
+#time <- relevel(time, ref = 3.5)
+type <- relevel(type, ref = 'mock')
+reg <- relevel(reg, ref = 'rna')
+batch <- c(1,0)[1 + (rep %in% c(1,2))]
+group = reg:type
+ann <- data.frame(type=type,reg=reg,rep=rep,time=time)
+write.table(ann, str_c("./",'ann.tsv'), sep="\t", quote = F, row.names = F)
+
+x <- cts[,c(3:ncol(cts))]
+rownames(x) <- paste(cts$GENES_SYMBOL, cts$ENSEMBL_ID, sep="__")
+y <- DGEList(counts=x,group=group)
+
+keep <- filterByExpr(y, group=group)
+y <- y[keep,,keep.lib.sizes=FALSE]
+
+#glMDSPlot(y[,1:6], groups=group, folder = "glimma-plots/")
+glimmaMDS(y[,1:25], groups=ann[1:25,], gene.selection = "common", folder="mds")
+#glMDSPlot(y[,7:12], groups=group, folder = "glimma-plots/")
+glimmaMDS(y[,26:50], groups=ann[26:50,], gene.selection = "common", folder="mds")
+y <- calcNormFactors(y)
+
+plot(density(log2(y$counts[,1]*1000000/(y$samples$lib.size[1]+1))), from = -2, to = 20, lwd = 3)
+for (k in 2:25){
+  lines(density(log2(y$counts[,k]*1000000/(y$samples$lib.size[k]+1))),col=k)
+}
+
+plot(density(log2(y$counts[,7]*1000000/(y$samples$norm.factors[1]*y$samples$lib.size[7]+1))), from = -2, to = 20, lwd = 3)
+for (k in 8:12){
+  lines(density(log2(y$counts[,k]*1000000/(y$samples$norm.factors[k]*y$samples$lib.size[k]+1))),col=k)
+}
+
+design <- model.matrix(~0 + group + group:time)
+design_c <- design[,-c(5,7,9,11,13,15)]
+ncol(design_c) <= qr(design_c)$rank
+y <- estimateDisp(y,design_c)
+
+fit <- glmQLFit(y,design_c)
+#grouprna:wt grouprna:ko groupribo:wt groupribo:ko
+#1. 4
+qlf_RO_sarscov2_15_4 <- glmQLFTest(fit, contrast = c(1, -1, -1, 1, rep(0,10)))
+qlf_rna_sarscov2_15_4 <- glmQLFTest(fit, contrast = c(c(-1, 1), rep(0, 12)))
+qlf_ribo_sarscov2_15_4 <- glmQLFTest(fit, contrast = c(rep(0,2), c(-1, 1), rep(0,10)))
+
+res_RO_sarscov2_15_4 <- topTags(qlf_RO_sarscov2_4, n = Inf)[[1]]
+res_rna_sarscov2_15_4 <- topTags(qlf_rna_sarscov2_4, n =Inf)[[1]]
+res_ribo_sarscov2_15_4 <- topTags(qlf_ribo_sarscov2_4, n =Inf)[[1]]
+
+#Another join
+x$row_names <- rownames(x)
+
+library("IHW")
+res_RO_sarscov2_4$row_names <- rownames(res_RO_sarscov2_4)
+res_RO_sarscov2_4 <- left_join(res_RO_sarscov2_4, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_RO_sarscov2_4$PValue, covariates = rowMeans(dplyr::select(res_RO_sarscov2_4, contains("virus"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_RO_sarscov2_4$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_RO_sarscov2_4$PValue, method="BH")
+sum(FDR < 0.1)
+
+res_ribo_48$row_names <- rownames(res_ribo_48)
+res_ribo_48 <- left_join(res_ribo_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_ribo_48$PValue, covariates = rowMeans(dplyr::select(res_ribo_48, contains("ribo_"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_ribo_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_ribo_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+#2. 24
+qlf_RO_sarscov2_24 <- glmQLFTest(fit, contrast = c(1, -1, -1, 1, -1, 1, rep(0, 4), 0.217, -0.217, -0.217, 0.217))
+qlf_rna_sarscov2_24 <- glmQLFTest(fit, contrast = c(c(-1, 1), rep(0, 2), 1, rep(0, 5), c(-0.217, 0.217), rep(0,2)))
+qlf_ribo_sarscov2_24 <- glmQLFTest(fit, contrast = c(rep(0, 2), c(-1, 1), 0, 1, rep(0, 4), rep(0,2), c(-0.217, 0.217)))
+
+res_RO_sarscov2_24 <- topTags(qlf_RO_sarscov2_24, n = Inf)[[1]]
+res_rna_sarscov2_24 <- topTags(qlf_rna_sarscov2_24, n =Inf)[[1]]
+res_ribo_sarscov2_24 <- topTags(qlf_ribo_sarscov2_24, n =Inf)[[1]]
+
+#Another join
+x$row_names <- rownames(x)
+
+library("IHW")
+res_RO_sarscov2_24$row_names <- rownames(res_RO_sarscov2_24)
+res_RO_sarscov2_24 <- left_join(res_RO_sarscov2_24, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_RO_sarscov2_24$PValue, covariates = rowMeans(dplyr::select(res_RO_sarscov2_24, contains("virus"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_RO_sarscov2_24$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_RO_sarscov2_24$PValue, method="BH")
+sum(FDR < 0.1)
+
+res_ribo_48$row_names <- rownames(res_ribo_48)
+res_ribo_48 <- left_join(res_ribo_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_ribo_48$PValue, covariates = rowMeans(dplyr::select(res_ribo_48, contains("ribo_"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_ribo_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_ribo_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+res_rna_48$row_names <- rownames(res_rna_48)
+res_rna_48 <- left_join(res_ribo_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_rna_48$PValue, covariates = rowMeans(dplyr::select(res_rna_48, contains("rna_"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_rna_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_rna_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+write.table(res_rna_48, str_c("./",'RNA_48.tsv'), sep="\t", quote = F, row.names = F)
+write.table(res_ribo_48, str_c("./",'Ribo_48.tsv'), sep="\t", quote = F, row.names = F)
+write.table(res_RO_48, str_c("./",'RO_48.tsv'), sep="\t", quote = F, row.names = F)
+
+#3. 48
+qlf_RO_sarscov2_48 <- glmQLFTest(fit, contrast = c(1, 0, -1, -1, 0, 1))
+qlf_rna_sarscov2_48 <- glmQLFTest(fit, contrast = c(-1, 0, 1, 0, 0, 0))
+qlf_ribo_sarscov2_48 <- glmQLFTest(fit, contrast = c(0, 0, 0, -1, 0, 1))
+
+res_RO_sarscov2_48 <-  topTags(qlf_RO_sarscov2_48, n = Inf)[[1]]
+res_rna_sarscov2_48 <-  topTags(qlf_rna_sarscov2_48, n =Inf)[[1]]
+res_ribo_sarscov2_48 <-  topTags(qlf_ribo_sarscov2_48, n =Inf)[[1]]
+
+#Another join
+x$row_names <- rownames(x)
+
+library("IHW")
+res_RO_sarscov2_48$row_names <- rownames(res_RO_sarscov2_48)
+res_RO_sarscov2_48 <- left_join(res_RO_sarscov2_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_RO_sarscov2_48$PValue, covariates = rowMeans(dplyr::select(res_RO_sarscov2_48, contains("virus"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_RO_sarscov2_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_RO_sarscov2_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+res_ribo_sarscov2_48$row_names <- rownames(res_ribo_sarscov2_48)
+res_ribo_sarscov2_48 <- left_join(res_ribo_sarscov2_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_ribo_sarscov2_48$PValue, covariates = rowMeans(dplyr::select(res_ribo_sarscov2_48, contains("ribo_"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_ribo_sarscov2_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_ribo_sarscov2_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+res_rna_sarscov2_48$row_names <- rownames(res_rna_sarscov2_48)
+res_rna_sarscov2_48 <- left_join(res_ribo_sarscov2_48, x, by="row_names")
+#IHW
+ihwRes <- ihw(pvalues = res_rna_sarscov2_48$PValue, covariates = rowMeans(dplyr::select(res_rna_sarscov2_48, contains("rna_"))), alpha = 0.1)
+adj_pvalues(ihwRes)
+res_rna_sarscov2_48$adj_palues <- adj_pvalues(ihwRes)
+count(adj_pvalues(ihwRes) < 0.05)
+#BH
+FDR <- p.adjust(res_rna_sarscov2_48$PValue, method="BH")
+sum(FDR < 0.1)
+
+write.table(res_rna_72, str_c("./",'RNA_72.tsv'), sep="\t", quote = F, row.names = F)
+write.table(res_ribo_72, str_c("./",'Ribo_72.tsv'), sep="\t", quote = F, row.names = F)
+write.table(res_RO_72, str_c("./",'RO_72.tsv'), sep="\t", quote = F, row.names = F)
